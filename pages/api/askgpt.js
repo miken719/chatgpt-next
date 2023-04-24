@@ -8,15 +8,33 @@ export default async function chatGpt(req, res) {
   });
   const openai = new OpenAIApi(configuration);
 
-  const response = await openai.createCompletion({
-    model: body.model,
-    prompt: body.prompt,
-    max_tokens: 30,
-    temperature: body.temperature,
-  });
-  if (!response) {
+  const data = await openai.createChatCompletion(
+    {
+      "messages": [
+        {
+          "role": "system",
+          "content": `context: ${body.context}`
+        },
+        {
+          "role": "user",
+          "content": `${body.prompt}`
+        }
+      ],
+      "temperature": body.temperature,
+      "max_tokens": 256,
+      "model": body.model,
+    })
+
+  // const response = await openai.createCompletion({
+  //   model: body.model,
+  //   prompt: body.prompt,
+  //   max_tokens: 30,
+  //   temperature: body.temperature,
+  // });
+
+  if (!data) {
     res.status(400).json({ message: "Something went wrong..." });
   } else {
-    res.status(200).json({ data: response?.data });
+    res.status(200).json({ data: data?.data?.choices?.[0]?.message?.content });
   }
 }
